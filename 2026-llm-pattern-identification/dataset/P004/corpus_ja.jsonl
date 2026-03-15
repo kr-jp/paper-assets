@@ -1,0 +1,15 @@
+{"id": "P004_0001", "text": "そろそろ昼にするとしますか。", "label": "positive"}
+{"id": "P004_0002", "text": "今日はこの辺で切り上げるとしますか。", "label": "positive"}
+{"id": "P004_0003", "text": "この計画の担当者は、田中さんにお願いするとしますか。", "label": "positive"}
+{"id": "P004_0004", "text": "天気もいいし、散歩にでも行くとするか。", "label": "positive"}
+{"id": "P004_0005", "text": "今日の夕食は和食としますか、洋食としますか。", "label": "surface"}
+{"id": "P004_0006", "text": "じゃあ、そろそろ出発するとしますか。", "label": "positive"}
+{"id": "P004_0007", "text": "新プロジェクトのリーダーを彼とするかどうか、現在検討中だ。", "label": "surface"}
+{"id": "P004_0008", "text": "この証拠を本物とするか、偽物とするかで判決は大きく変わる。", "label": "surface"}
+{"id": "P004_0009", "text": "では、始めましょうか。", "label": "semantic"}
+{"id": "P004_0010", "text": "そろそろ帰ろうか。", "label": "semantic"}
+{"id": "P004_0011", "text": "これで終わりにしませんか。", "label": "semantic"}
+{"id": "P004_0012", "text": "この新しい保険プランは、配偶者も対象としますか？", "label": "ambiguity"}
+{"id": "P004_0013", "text": "仮にAの値を100としますか。すると…", "label": "ambiguity"}
+{"id": "P004_0014", "text": "今後の連絡は、すべてメールで行うことにします。", "label": "other_construction"}
+{"id": "P004_0015", "text": "明日の会議は午前10時からでお間違いないでしょうか。", "label": "other_construction"}

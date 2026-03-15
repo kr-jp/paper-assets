@@ -1,0 +1,15 @@
+{"id": "P014_0001", "text": "花盛りの季節になると、観光客で通りがにぎわう。", "label": "positive"}
+{"id": "P014_0002", "text": "手作りのお菓子をもらって、とても嬉しかった。", "label": "positive"}
+{"id": "P014_0003", "text": "青空の下で食べるお弁当は格別だ。", "label": "positive"}
+{"id": "P014_0004", "text": "店仕舞いの時間が近づいている。", "label": "positive"}
+{"id": "P014_0005", "text": "駅前に人だかりができていた。", "label": "positive"}
+{"id": "P014_0006", "text": "車の窓ガラスが割れてしまった。", "label": "surface"}
+{"id": "P014_0007", "text": "あのレストランは、生ビールが半額だ。", "label": "surface"}
+{"id": "P014_0008", "text": "温かい春雨が、乾いた地面を静かに濡らしていく。", "label": "semantic"}
+{"id": "P014_0009", "text": "引っ越し先の物件を探している。", "label": "semantic"}
+{"id": "P014_0010", "text": "三位一体の改革が議論されている。", "label": "semantic"}
+{"id": "P014_0011", "text": "遠くの島々が夕日に染まる。", "label": "ambiguity"}
+{"id": "P014_0012", "text": "昨夜、隣の家で激しい夫婦喧嘩があった。", "label": "ambiguity"}
+{"id": "P014_0013", "text": "駅前のビルが取り壊されることになった。", "label": "other_construction"}
+{"id": "P014_0014", "text": "明日の会議の資料を作成する。", "label": "other_construction"}
+{"id": "P014_0015", "text": "明日は観光バスで市内を巡る予定だ。", "label": "surface"}

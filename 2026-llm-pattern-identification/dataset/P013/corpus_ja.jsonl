@@ -1,0 +1,15 @@
+{"id": "P013_0001", "text": "失礼きわまりない発言だと非難された。", "label": "positive"}
+{"id": "P013_0002", "text": "不愉快極まる態度で接客されたので二度と行かない。", "label": "positive"}
+{"id": "P013_0003", "text": "危険きわまりない実験を繰り返し行っていた。", "label": "positive"}
+{"id": "P013_0004", "text": "退屈極まりない会議が三時間も続いた。", "label": "positive"}
+{"id": "P013_0005", "text": "迷惑きわまりない行為として厳しく処分された。", "label": "positive"}
+{"id": "P013_0006", "text": "感極まって涙があふれた。", "label": "surface"}
+{"id": "P013_0007", "text": "敵軍に完全に包囲され、もはや進退極まった。", "label": "surface"}
+{"id": "P013_0008", "text": "彼の怒りはついに頂点に極まり無いはずの力が全身から湧き上がってきた。", "label": "surface"}
+{"id": "P013_0009", "text": "この上なく失礼な態度だった。", "label": "semantic"}
+{"id": "P013_0010", "text": "実に不愉快な思いをさせられた。", "label": "semantic"}
+{"id": "P013_0011", "text": "これほど迷惑な話はない。", "label": "semantic"}
+{"id": "P013_0012", "text": "感激きわまりない瞬間だった。", "label": "ambiguity"}
+{"id": "P013_0013", "text": "贅沢極まる食事が毎晩振る舞われた。", "label": "ambiguity"}
+{"id": "P013_0014", "text": "常識に照らし合わせれば、それは明らかな迷惑行為である。", "label": "other_construction"}
+{"id": "P013_0015", "text": "そのような危険な実験は、直ちに中止するべきだ。", "label": "other_construction"}

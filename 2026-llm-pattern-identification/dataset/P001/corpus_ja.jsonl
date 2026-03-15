@@ -1,0 +1,15 @@
+{"id": "P001_0001", "text": "難しいっちゃ難しいんだけど、やってみる価値はあると思う。", "label": "positive"}
+{"id": "P001_0002", "text": "遠いっちゃ遠いけど、歩けない距離じゃないよ。", "label": "positive"}
+{"id": "P001_0003", "text": "正しいといえば正しいんだが、ちょっと言い方がきつい。", "label": "positive"}
+{"id": "P001_0004", "text": "寒いといえば寒いんですが。", "label": "positive"}
+{"id": "P001_0005", "text": "早く行かなくっちゃ。", "label": "surface"}
+{"id": "P001_0006", "text": "似てるっちゃ似てるかもね。", "label": "positive"}
+{"id": "P001_0007", "text": "もう帰んなくっちゃ。", "label": "surface"}
+{"id": "P001_0008", "text": "勉強しなくちゃいけないんだよ。", "label": "surface"}
+{"id": "P001_0009", "text": "おいしいかどうかは微妙なところだね。", "label": "semantic"}
+{"id": "P001_0010", "text": "まあ、悪くはないんじゃない？", "label": "semantic"}
+{"id": "P001_0011", "text": "強いて言えば、もう少し塩味がほしい。", "label": "semantic"}
+{"id": "P001_0012", "text": "彼は、やるといえばやる男だ。", "label": "ambiguity"}
+{"id": "P001_0013", "text": "うまいといえばうまいし、まずいといえばまずい。", "label": "ambiguity"}
+{"id": "P001_0014", "text": "仕事は仕事、プライベートはプライベートと割り切るべきだ。", "label": "other_construction"}
+{"id": "P001_0015", "text": "あのシステムからは、次から次へと新しいバグが浮上してくる。", "label": "other_construction"}

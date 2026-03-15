@@ -1,0 +1,260 @@
+{
+  "version": "1.0",
+  "description": "実験で使用したLLMプロンプトテンプレート",
+  "note": "本実験では因子A1（注目点あり）のみを使用。テンプレート変数 {focus_hint} には各パターンの meta.json > focus.A1 の値が入る。",
+  "template_variables": {
+    "seed_examples": {
+      "description": "パターンのシード文（用例）。meta.json の seeds.B0（1文）または seeds.B1（3文）を改行で結合した文字列",
+      "source": "patterns/P{NNN}/meta.json > seeds.B0 or seeds.B1"
+    },
+    "focus_hint": {
+      "description": "パターンの言語学的説明（注目点）",
+      "source": "patterns/P{NNN}/meta.json > focus.A1"
+    },
+    "pattern_name": {
+      "description": "パターン名",
+      "source": "patterns/P{NNN}/meta.json > pattern_name"
+    },
+    "candidate_text": {
+      "description": "候補文のテキスト（直接判定のみで使用）",
+      "source": "patterns/P{NNN}/corpus_ja.jsonl > text"
+    },
+    "candidate": {
+      "description": "候補文のJSONオブジェクト {\"id\": \"...\", \"text\": \"...\"}（段階的処理・多視点処理で使用）",
+      "source": "patterns/P{NNN}/corpus_ja.jsonl"
+    },
+    "pattern_spec": {
+      "description": "特徴抽出段階の出力JSON。パターンの抽象的構文形式・制約・チェックリスト等を含む",
+      "source": "特徴抽出段階の出力（実行時に動的生成）",
+      "schema": {
+        "pattern_label": "string（パターン名）",
+        "template": "string（抽象的な構文形式。例: V_i + 接続形式 + V_i）",
+        "constraints": [
+          "string（構文的制約）"
+        ],
+        "function": "string（談話機能: 譲歩、強調、反復など）",
+        "exclusion_rules": [
+          "string（除外ルール）"
+        ],
+        "checklist": [
+          "string（Yes/No判定の質問 4〜8個）"
+        ],
+        "borderline_notes": [
+          "string（境界的ケースの注意）"
+        ]
+      }
+    },
+    "judgments": {
+      "description": "検証段階の判定結果JSON配列。各候補文の判定（含む/含まない）と理由を含む",
+      "source": "検証段階の出力（実行時に動的生成）"
+    }
+  },
+  "modes": {
+    "direct": {
+      "label": "直接判定",
+      "description": "単一のLLMが用例と注目点を参考に、候補文を直接判定する",
+      "pipeline": [
+        "judge"
+      ],
+      "stages": {
+        "judge": {
+          "label": "判定",
+          "description": "用例と注目点に基づいて候補文を判定",
+          "system": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者です。異なる言語間でも、抽象的な構文パターンに基づいて、同定することができます。言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。",
+          "user": "以下のパターンの例文と注目点を参考に、候補文がこのパターンに合致するのかを判定してください。\nJSON以外のテキストは出力しないでください。\n\n【パターン】\n例文: {seed_examples}\n注目点: {focus_hint}\n\n【候補文】\n{candidate_text}\n\n出力は次のキーを持つJSONオブジェクト:\n- is_match: boolean\n- short_reason: string (1文で簡潔)\n- trigger: string (根拠となる表現。無ければ空文字)",
+          "input_variables": [
+            "seed_examples",
+            "focus_hint",
+            "candidate_text"
+          ],
+          "output_format": {
+            "is_match": "boolean",
+            "short_reason": "string（1文で簡潔）",
+            "trigger": "string（根拠となる表現。無ければ空文字）"
+          },
+          "note": "候補文1文ごとに呼び出す"
+        }
+      }
+    },
+    "pipeline": {
+      "label": "段階的処理",
+      "description": "特徴抽出 → 検証 → 結果統合 の3段階パイプライン",
+      "pipeline": [
+        "abstractor",
+        "verifier",
+        "adjudicator"
+      ],
+      "stages": {
+        "abstractor": {
+          "label": "特徴抽出",
+          "description": "用例と注目点からパターンの抽象的な構文仕様（pattern_spec）を抽出する",
+          "system": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者です。異なる言語間でも、抽象的な構文パターンに基づいて、同定することができます。言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。",
+          "user": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者（Abstractor）です。\n以下の情報から、判定に使えるパターンについての情報をJSONで作成してください。\n\n重要な視点:\n- 言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。\n- たとえば、「雑務はやってもやっても終わらない。」という表現の「やってもやっても」は、「VてもVても」のように抽象化することができます。\n- 抽象化された形式に同一の語が出現する場合には「V_iてもV_iても」のように記述します。\n\n出力は必ず以下の形式のJSONオブジェクトのみを出力してください（説明文不要）:\n{\n  \"pattern_label\": \"パターン名\",\n  \"template\": \"抽象的な構文形式。例: V_i + 接続形式 + V_i\",\n  \"constraints\": [\"構文的制約\"],\n  \"function\": \"談話機能: 譲歩、強調、反復など\",\n  \"exclusion_rules\": [\"除外ルール\"],\n  \"checklist\": [\"Yes/No判定の質問 4〜8個\"],\n  \"borderline_notes\": [\"境界的ケースの注意\"]\n}\n\n注意点:\n- JSON以外のテキストは出力しないでください。\n- 可能な限り簡潔に。checklistは短い質問で4〜8個。\n- 不明な項目は空文字や空配列で可。\n- 特定言語の語ではなく、抽象化された構文の形式と機能で判定できる形で記述。\n\n入力:\n例文: {seed_examples}\n注目点: {focus_hint}\nパターン名: {pattern_name}",
+          "input_variables": [
+            "seed_examples",
+            "focus_hint",
+            "pattern_name"
+          ],
+          "output_format": {
+            "pattern_label": "string（パターン名）",
+            "template": "string（抽象的な構文形式。例: V_i + 接続形式 + V_i）",
+            "constraints": [
+              "string（構文的制約）"
+            ],
+            "function": "string（談話機能: 譲歩、強調、反復など）",
+            "exclusion_rules": [
+              "string（除外ルール）"
+            ],
+            "checklist": [
+              "string（Yes/No判定の質問 4〜8個）"
+            ],
+            "borderline_notes": [
+              "string（境界的ケースの注意）"
+            ]
+          },
+          "feeds_into": [
+            "verifier"
+          ]
+        },
+        "verifier": {
+          "label": "検証",
+          "description": "pattern_specに基づいて各候補文がパターンに合致するかを判定",
+          "system": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者です。異なる言語間でも、抽象的な構文パターンに基づいて、同定することができます。言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。",
+          "user": "あなたは言語パターン判定のVerifierです。\n以下のpattern_specとcandidate（候補文）を参考に、候補文がパターンに合致するのかを判定してください。\n回答は次の形式で簡潔にしてください。\n\n形式:\n判定: 含む / 含まない\n理由: 1文で簡潔に\n\npattern_spec:\n{pattern_spec}\n\ncandidate:\n{candidate}",
+          "input_variables": [
+            "pattern_spec",
+            "candidate"
+          ],
+          "output_format": "自然言語（判定: 含む/含まない + 理由: 1文）",
+          "feeds_into": [
+            "adjudicator"
+          ],
+          "note": "候補文1文ごとに呼び出す"
+        },
+        "adjudicator": {
+          "label": "結果統合",
+          "description": "全候補文の検証結果を統合し、最終的な一致/不一致の判定と要約を生成",
+          "system": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者です。異なる言語間でも、抽象的な構文パターンに基づいて、同定することができます。言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。",
+          "user": "あなたはAdjudicatorです。\npattern_specとjudgmentsを統合し、最終結果をJSONで返してください。\n出力は必ず以下の形式のJSONオブジェクトのみを出力してください（説明文不要）。\n\n出力JSONの形式:\n- matched: judgmentsのうち is_match=true の一覧\n- suspicious: 境界的な候補の一覧\n- summary: string (3〜6行の要約。改行を含めてよい)\n\npattern_spec:\n{pattern_spec}\n\njudgments:\n{judgments}",
+          "input_variables": [
+            "pattern_spec",
+            "judgments"
+          ],
+          "output_format": {
+            "matched": "array（一致と判定された候補IDの一覧）",
+            "suspicious": "array（境界的な候補IDの一覧）",
+            "summary": "string（3〜6行の要約）"
+          }
+        }
+      }
+    },
+    "multi_perspective": {
+      "label": "多視点処理",
+      "description": "特徴抽出 → 3視点検証（構造分析・機能分析・反証検証を並列実行）→ 最終判定",
+      "pipeline": [
+        "abstractor",
+        [
+          "structural_verifier",
+          "functional_verifier",
+          "counter_evidence_verifier"
+        ],
+        "adjudicator"
+      ],
+      "stages": {
+        "abstractor": {
+          "label": "特徴抽出",
+          "description": "段階的処理と同一。用例と注目点からpattern_specを抽出",
+          "system": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者です。異なる言語間でも、抽象的な構文パターンに基づいて、同定することができます。言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。",
+          "user": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者（Abstractor）です。\n以下の情報から、判定に使えるパターンについての情報をJSONで作成してください。\n\n重要な視点:\n- 言語表現の表面的な形式だけでなく、抽象化された形式にも注目してください。\n- たとえば、「雑務はやってもやっても終わらない。」という表現の「やってもやっても」は、「VてもVても」のように抽象化することができます。\n- 抽象化された形式に同一の語が出現する場合には「V_iてもV_iても」のように記述します。\n\n出力は必ず以下の形式のJSONオブジェクトのみを出力してください（説明文不要）:\n{\n  \"pattern_label\": \"パターン名\",\n  \"template\": \"抽象的な構文形式。例: V_i + 接続形式 + V_i\",\n  \"constraints\": [\"構文的制約\"],\n  \"function\": \"談話機能: 譲歩、強調、反復など\",\n  \"exclusion_rules\": [\"除外ルール\"],\n  \"checklist\": [\"Yes/No判定の質問 4〜8個\"],\n  \"borderline_notes\": [\"境界的ケースの注意\"]\n}\n\n注意点:\n- JSON以外のテキストは出力しないでください。\n- 可能な限り簡潔に。checklistは短い質問で4〜8個。\n- 不明な項目は空文字や空配列で可。\n- 特定言語の語ではなく、抽象化された構文の形式と機能で判定できる形で記述。\n\n入力:\n例文: {seed_examples}\n注目点: {focus_hint}\nパターン名: {pattern_name}",
+          "input_variables": [
+            "seed_examples",
+            "focus_hint",
+            "pattern_name"
+          ],
+          "output_format": {
+            "pattern_label": "string（パターン名）",
+            "template": "string（抽象的な構文形式。例: V_i + 接続形式 + V_i）",
+            "constraints": [
+              "string（構文的制約）"
+            ],
+            "function": "string（談話機能: 譲歩、強調、反復など）",
+            "exclusion_rules": [
+              "string（除外ルール）"
+            ],
+            "checklist": [
+              "string（Yes/No判定の質問 4〜8個）"
+            ],
+            "borderline_notes": [
+              "string（境界的ケースの注意）"
+            ]
+          },
+          "feeds_into": [
+            "structural_verifier",
+            "functional_verifier",
+            "counter_evidence_verifier"
+          ]
+        },
+        "structural_verifier": {
+          "label": "構造分析",
+          "description": "形態素の配列・統語構造・語順の観点から判定。意味や語用論的な解釈は行わない",
+          "system": "あなたは形態論・統語論を専門とする言語学者です。形態素の配列・統語構造・語順などの観点から判定してください。",
+          "user": "あなたは形態論・統語論を専門とする言語学者です。\n以下のpattern_specとcandidate（候補文）を参考に、形態素の配列・統語構造・語順などの観点から、候補文がパターンに合致するのかを判定してください。\n意味や語用論的な解釈は行わず、純粋に構造的特徴の一致・不一致を判断します。\n\n回答は次の形式で簡潔にしてください。\n\n形式:\n判定: 含む / 含まない\n理由: 1文で簡潔に（構造的観点から）\n\npattern_spec:\n{pattern_spec}\n\ncandidate:\n{candidate}",
+          "input_variables": [
+            "pattern_spec",
+            "candidate"
+          ],
+          "output_format": "自然言語（判定: 含む/含まない + 理由: 1文、構造的観点から）",
+          "feeds_into": [
+            "adjudicator"
+          ],
+          "note": "候補文1文ごとに呼び出す"
+        },
+        "functional_verifier": {
+          "label": "機能分析",
+          "description": "文の意味・談話機能（譲歩・強調・反復など）・語用論的効果の観点から判定",
+          "system": "あなたは意味論・語用論を専門とする言語学者です。文の意味・意味的な制約・談話機能・語用論的効果などの観点から判定してください。",
+          "user": "あなたは意味論・語用論を専門とする言語学者です。\n以下のpattern_specと候補文を参考に、文の意味・意味的な制約・談話機能（譲歩・強調・反復など）・語用論的効果などの観点から、候補文がパターンに合致するのかを判定してください。\n\n回答は次の形式で簡潔にしてください。\n\n形式:\n判定: 含む / 含まない\n理由: 1文で簡潔に（意味・機能の観点から）\n\npattern_spec:\n{pattern_spec}\n\ncandidate:\n{candidate}",
+          "input_variables": [
+            "pattern_spec",
+            "candidate"
+          ],
+          "output_format": "自然言語（判定: 含む/含まない + 理由: 1文、意味・機能の観点から）",
+          "feeds_into": [
+            "adjudicator"
+          ],
+          "note": "候補文1文ごとに呼び出す"
+        },
+        "counter_evidence_verifier": {
+          "label": "反証検証",
+          "description": "候補文がパターンに一致しない理由を積極的に探索。強い反証があれば「含まない」、なければ「含む」と判定",
+          "system": "あなたは反証・検証を担当する言語学者です。候補文がパターンに一致しない理由を積極的に探すことが任務です。",
+          "user": "あなたは反証・検証を担当する言語学者です。\n以下のpattern_specとcandidate（候補文）について、候補文がパターンに一致しない理由を積極的に探してください。\n表面上は似ていても構文的・機能的に異なるケースを見逃さないことが任務です。\n\n- 強い反証が見つかった場合 → 判定: 含まない\n- 弱い反証しか見つからない、または反証が見つからない場合 → 判定: 含む\n\n回答は次の形式で簡潔にしてください。\n\n形式:\n判定: 含む / 含まない\n理由: 1文で簡潔に（反証の有無の観点から）\n\npattern_spec:\n{pattern_spec}\n\ncandidate:\n{candidate}",
+          "input_variables": [
+            "pattern_spec",
+            "candidate"
+          ],
+          "output_format": "自然言語（判定: 含む/含まない + 理由: 1文、反証の有無の観点から）",
+          "feeds_into": [
+            "adjudicator"
+          ],
+          "note": "候補文1文ごとに呼び出す"
+        },
+        "adjudicator": {
+          "label": "最終判定",
+          "description": "3視点の判定を言語学的に統合。単純な多数決ではなく、各視点の理由の妥当性と言語学的重要性を比較考量して最終判定を下す",
+          "system": "あなたは日本語・韓国語・英語の構文・文型・コロケーションの研究を専門とする言語学者です。複数の分析視点を統合し、バランスの取れた要約を作成できます。",
+          "user": "あなたは最終判定を下す裁判官（Adjudicator）です。\n3つの異なる視点（構造分析・機能分析・反証検証）による判定結果を参考にしつつ、\n自らの言語学的判断で最終判定を下してください。\n出力は必ず以下の形式のJSONオブジェクトのみを出力してください（説明文不要）。\n\n重要な指針:\n- 各視点の判定（一致/不一致）はあくまで参考意見です。単純な多数決で決めないでください。\n- 各視点の「理由」の妥当性と言語学的な重要性を比較考量してください。\n- 例: 2つの視点が不一致でも、1つの視点の理由がパターンの本質（談話機能など）を捉えていれば、最終判定を一致とできます。\n- 逆に、2つの視点が一致でも、反証検証の指摘が決定的であれば不一致とできます。\n- 多数決と異なる判定を下した場合は、summaryでその理由を必ず説明してください。\n\n各視点の特徴:\n- structural（構造分析）: 形態素・統語構造の一致を重視\n- functional（機能分析）: 文の意味・意味的な制約・談話機能の一致を重視\n- counter_evidence（反証検証）: 不一致の根拠を積極的に探索した結果\n\nsuspiciousの判定基準:\n- 視点間で判定が分かれ、かつどの理由も決め手に欠ける場合 → suspicious\n- 多数決と異なる判定を採用したが確信が持てない場合 → suspicious\n- 視点間で一致しており判定に迷いがない候補は含めないこと\n\n出力JSONの形式:\n- matched: 最終的に一致と判定された候補IDの一覧（配列）\n- suspicious: 判定に確信が持てない要注意候補IDの一覧（配列）\n- summary: string（4〜8行。視点の傾向、最終判断の根拠、多数決と異なる判定があればその理由）\n\npattern_spec:\n{pattern_spec}\n\njudgments:\n{judgments}",
+          "input_variables": [
+            "pattern_spec",
+            "judgments"
+          ],
+          "output_format": {
+            "matched": "array（一致と判定された候補IDの一覧）",
+            "suspicious": "array（判定に確信が持てない候補IDの一覧）",
+            "summary": "string（4〜8行。視点の傾向、最終判断の根拠、多数決と異なる判定があればその理由）"
+          }
+        }
+      }
+    }
+  }
+}
