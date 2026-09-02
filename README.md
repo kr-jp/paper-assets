@@ -8,3 +8,4 @@ Supplementary materials for academic publications.
 
 - [外国人入国者数・検索語トレンド・ブログ分析から読み解く地方都市「松山」と韓国人観光客](./2025-matsuyama-tourism/)
 - [LLMによる日本語の言語パターン識別―処理方式の効果と曖昧例の影響―](./2026-llm-pattern-identification/)
+- [LLMが生成する日本語のコーパス言語学的分析に向けて―方法論的課題と枠組みの提案―](./2026-llm-japanese-corpus-framework/)
